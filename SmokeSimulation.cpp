@@ -38,10 +38,6 @@ int main() {
     bool moving = false;
     float zoom = 1;
     sf::View view = window.getDefaultView();
-    view.setViewport(sf::FloatRect(0.f, 0.f, .75f, 1.f));
-
-    sf::View viewPanel = window.getDefaultView();
-    viewPanel.setViewport(sf::FloatRect(.75f, 0.f, .25f, 1.f));
 
     while (window.isOpen())
     {
