@@ -1,34 +1,34 @@
 #pragma once
 
-class SmokeCloud {
+class SmokeParticle {
 public:
-    sf::CircleShape cloud;
+    sf::CircleShape particle;
     float speed;
 
-    SmokeCloud() : speed(1.5f) {
-        cloud.setRadius(25.f);
-        cloud.setPosition(100.f, 100.f);
+    SmokeParticle() : speed(1.5f) {
+        particle.setRadius(25.f);
+        particle.setPosition(100.f, 100.f);
 
         srand(time(NULL) + rand());
         int color = 50 + rand() % 50;
-        cloud.setFillColor(sf::Color::Color(color, color, color));
+        particle.setFillColor(sf::Color::Color(color, color, color));
     }
 
-    SmokeCloud(float x, float y, float r) : speed(1.5f) {
-        cloud.setRadius(r);
-        cloud.setPosition(x, y);
+    SmokeParticle(float x, float y, float r) : speed(1.5f) {
+        particle.setRadius(r);
+        particle.setPosition(x, y);
 
         srand(time(NULL) + rand());
         int color = 50 + rand() % 50;
-        cloud.setFillColor(sf::Color::Color(color, color, color));
+        particle.setFillColor(sf::Color::Color(color, color, color));
     }
 
     bool collision(sf::RectangleShape& rectShape) {
-        return cloud.getGlobalBounds().intersects(rectShape.getGlobalBounds());
+        return particle.getGlobalBounds().intersects(rectShape.getGlobalBounds());
     }
 
     bool collision(sf::CircleShape& circleShape) {
-        return cloud.getGlobalBounds().intersects(circleShape.getGlobalBounds());
+        return particle.getGlobalBounds().intersects(circleShape.getGlobalBounds());
     }
 
     void moving(std::vector<sf::RectangleShape>& shapes) {
@@ -41,8 +41,8 @@ public:
         bool shape_collision = false;
         int move_side = 0;
 
-        float radius = cloud.getRadius();
-        sf::Vector2f cloudsPos = cloud.getPosition();
+        float radius = particle.getRadius();
+        sf::Vector2f particlePos = particle.getPosition();
 
         float xDist;
         float yDist;
@@ -54,8 +54,8 @@ public:
             sf::Vector2f rectPos = rectShape.getPosition();
             sf::Vector2f rectSize = rectShape.getSize();
 
-            xDist = abs(cloudsPos.x - rectPos.x);
-            yDist = abs(cloudsPos.y - rectPos.y);
+            xDist = abs(particlePos.x - rectPos.x);
+            yDist = abs(particlePos.y - rectPos.y);
             distance = sqrt(xDist*xDist+yDist*yDist);
             rectSizesSqrt = sqrt(rectSize.x * rectSize.x + rectSize.y * rectSize.y);
 
@@ -64,60 +64,61 @@ public:
                 all_collision |= shape_collision;
 
                 if (shape_collision)
-                    move_side = cloudsPos.x - (rectPos.x + rectShape.getSize().x / 2 - radius);
+                    move_side = particlePos.x - (rectPos.x + rectShape.getSize().x / 2 - radius);
 
             }
         }
         if (all_collision) {
-            cloud.move((move_side < 0 ? -.8f : .8f), interf);
+            particle.move((move_side < 0 ? -.8f : .8f), interf);
             return;
         }
-        cloud.move(interf, -speed);
+        particle.move(interf, -speed);
     }
 
     void draw(sf::RenderWindow& window) {
-        window.draw(cloud);
+        window.draw(particle);
     }
 };
 
 class Smoke {
-    std::vector <SmokeCloud> clouds;
+    std::vector <SmokeParticle> particles;
     size_t size;
     unsigned int params;
     float bouncePowerX;
     float bouncePowerY;
 
+    clock_t start, end, lifeTime;
 
     void bounce() {
-        float xDist = 0;
-        float yDist = 0;
-        float distance = 0;
-        float cloudSize = 0;
-        float cloudRadius1;
-        float cloudRadius2;
+        float xDist = 0,
+             yDist = 0,
+             distance = 0,
+             particlesSize = 0,
+             particlesRadius1,
+             particlesRadius2;
 
-        for (SmokeCloud& cloud1 : clouds) {
-            for (SmokeCloud& cloud2 : clouds) {
+        for (SmokeParticle& particles1 : particles) {
+            for (SmokeParticle& particles2 : particles) {
 
-                sf::Vector2f cloudPos1 = cloud1.cloud.getPosition();
-                sf::Vector2f cloudPos2 = cloud2.cloud.getPosition();
+                sf::Vector2f particlesPos1 = particles1.particle.getPosition();
+                sf::Vector2f particlesPos2 = particles2.particle.getPosition();
                 
-                cloudRadius1 = cloud1.cloud.getRadius();
-                cloudRadius2 = cloud2.cloud.getRadius();
-                xDist = abs(cloudPos1.x - cloudPos2.x);
-                yDist = abs(cloudPos1.y - cloudPos2.y);
+                particlesRadius1 = particles1.particle.getRadius();
+                particlesRadius2 = particles2.particle.getRadius();
+                xDist = abs(particlesPos1.x - particlesPos2.x);
+                yDist = abs(particlesPos1.y - particlesPos2.y);
                 distance = sqrt(xDist * xDist + yDist * yDist);
-                cloudSize = sqrt(cloudRadius1 * 4 + cloudRadius2 * 4);
+                particlesSize = sqrt(particlesRadius1 * 4 + particlesRadius2 * 4);
                 
-                if (distance < cloudSize * 2) {
-                    if (cloud1.cloud.getGlobalBounds().intersects(cloud2.cloud.getGlobalBounds())) {
-                        cloud1.cloud.move(-bouncePowerX, 0);
-                        cloud2.cloud.move(bouncePowerX,  0);
+                if (distance < particlesSize * 2) {
+                    if (particles1.particle.getGlobalBounds().intersects(particles2.particle.getGlobalBounds())) {
+                        particles1.particle.move(-bouncePowerX, 0);
+                        particles2.particle.move(bouncePowerX,  0);
                         continue;
                     }
-                    else if (distance < cloudSize * 5) {
-                        cloud1.cloud.move(.5f, -.1f);
-                        cloud2.cloud.move(-.5f, .1f);
+                    else if (distance < particlesSize * 5) {
+                        particles1.particle.move(.5f, -.1f);
+                        particles2.particle.move(-.5f, .1f);
                     }
                 }
             }
@@ -131,29 +132,33 @@ public:
     };
 
     Smoke() :
-        size(100), params(Default), bouncePowerX(.4f), bouncePowerY(.4f) {
+        size(100), params(Default), bouncePowerX(.4f), bouncePowerY(.4f), lifeTime(100) {
 
         srand(time(NULL) + rand());
 
         for (size_t i = 0; i < size; i++) {
-            clouds.push_back(SmokeCloud(100 + (rand() % 100), 100 + (rand() % 100), 2 + (rand() % 5)));
+            particles.push_back(SmokeParticle(100 + (rand() % 100), 100 + (rand() % 100), 2 + (rand() % 5)));
         }
+
+        start = clock();
     }
 
-    __vectorcall Smoke(size_t size_, float x, float y, unsigned int w, unsigned int h, float min_size, float max_size, unsigned int params_) :
-        size(size_), params(params_), bouncePowerX(.4f), bouncePowerY(.4f) {
+    __vectorcall Smoke(size_t size_ = 250, float x = 0, float y = 0, unsigned int w = 50, unsigned int h = 50, float min_size = 6, float max_size = 9, unsigned int params_ = (Default | Bouncing), clock_t lifeTime_ = 100) :
+        size(size_), params(params_), bouncePowerX(.4f), bouncePowerY(.4f), lifeTime(lifeTime_) {
 
         srand(time(NULL) + rand());
 
         for (size_t i = 0; i < size; i++) {
-            clouds.push_back(
-                SmokeCloud(
+            particles.push_back(
+                SmokeParticle(
                     x + (rand() % static_cast <unsigned int> (w)),
                     y + (rand() % static_cast <unsigned int> (h)),
                     min_size + (rand() % static_cast <unsigned int> (max_size - min_size))
                 )
             );
         }
+
+        start = clock();
     }
 
     void setBouncePower(float power = .4f) {
@@ -173,9 +178,18 @@ public:
             bounce();
         }
 
-        for (SmokeCloud& cloud : clouds) {
-            cloud.moving(shapes);
-            cloud.draw(window);
+        for (SmokeParticle& particle : particles) {
+            particle.moving(shapes);
+            particle.draw(window);
+        }
+    }
+
+    void update() {
+        end = clock();
+
+        //std::cout << end - start << std::endl;
+        if ((end - start) > lifeTime) {
+            if (particles.size()) particles.pop_back();
         }
     }
 };
