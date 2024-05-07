@@ -15,7 +15,7 @@ bool is_point_in_circle(double x, double y, double xc, double yc, double r) {
 
 int main() {
 
-    sf::RenderWindow window(sf::VideoMode(1080, 720), "Penis");
+    sf::RenderWindow window(sf::VideoMode(1080, 720), "SmokeSimulation");
     window.setFramerateLimit(60);
 
     for (size_t i = 0; i < 16; i++) {
